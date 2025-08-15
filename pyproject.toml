@@ -11,12 +11,15 @@ dependencies = [
   "fastapi>=0.110",
   "uvicorn[standard]>=0.29",
   "pydantic>=2.6",
+  "pydantic-settings>=2.3",
   "SQLAlchemy>=2.0",
   "psycopg2-binary>=2.9",
+  "alembic>=1.13",
   "requests>=2.31",
   "celery>=5.3",
   "python-json-logger>=2.0",
   "jinja2>=3.1",
+  "flower>=2.0"
 ]
 
 [tool.ruff]
@@ -25,6 +28,9 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
 ignore = []
+
+[tool.ruff.format]
+quote-style = "preserve"
 
 [tool.black]
 line-length = 100
@@ -36,7 +42,7 @@ line_length = 100
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-q --maxfail=1"
-pythonpath = ["."]
+pythonpath = [" . "]
 
 [project.optional-dependencies]
 dev = [
@@ -47,5 +53,6 @@ dev = [
   "ruff>=0.4",
   "black>=24.3",
   "isort>=5.13",
-  "pre-commit>=3.7"
+  "pre-commit>=3.7",
+  "flower>=2.0"
 ]
