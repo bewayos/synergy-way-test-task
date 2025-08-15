@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     enrich_card_every: str = Field("10m", alias="ENRICH_CARD_EVERY")
     batch_size: PositiveInt = Field(20, alias="BATCH_SIZE")
 
+    # Data provider switch
+    data_provider: str = Field("dummyjson", alias="DATA_PROVIDER")
+
     # External APIs
     jsonplaceholder_base_url: str = Field(
         "https://jsonplaceholder.typicode.com", alias="JSONPLACEHOLDER_BASE_URL"
@@ -34,6 +37,8 @@ class Settings(BaseSettings):
     random_data_api_base_url: str = Field(
         "https://random-data-api.com/api/v2", alias="RANDOM_DATA_API_BASE_URL"
     )
+    dummyjson_base_url: str = Field("https://dummyjson.com", alias="DUMMYJSON_BASE_URL")
+
     request_timeout_seconds: PositiveInt = Field(10, alias="REQUEST_TIMEOUT_SECONDS")
 
     # Pydantic v2 settings config

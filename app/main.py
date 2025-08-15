@@ -4,6 +4,8 @@ import logging
 
 from fastapi import FastAPI
 
+from app.api import routes_users
+
 from .db import engine
 from .logging_config import setup_logging
 from .models import Base
@@ -30,3 +32,6 @@ def healthz() -> dict[str, str]:
     """Simple health check endpoint."""
     logger.info("health_check")
     return {"status": "ok"}
+
+
+app.include_router(routes_users.router)

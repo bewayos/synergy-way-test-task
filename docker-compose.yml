@@ -52,7 +52,7 @@ services:
     command: ["celery", "-A", "app.celery_app.celery", "worker", "-l", "info"]
     env_file: .env
     depends_on:
-      api:
+      db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -62,7 +62,7 @@ services:
     command: ["celery", "-A", "app.celery_app.celery", "beat", "-l", "info"]
     env_file: .env
     depends_on:
-      api:
+      db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -78,7 +78,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-
 
 volumes:
   pgdata: {}
