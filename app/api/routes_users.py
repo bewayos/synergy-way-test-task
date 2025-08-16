@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Generator
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,15 +14,24 @@ from app.schemas import UserOut
 from app.utils.masking import mask_credit_card
 
 router = APIRouter(prefix="/users", tags=["users"])
+templates = Jinja2Templates(directory="app/templates")
 
 
-def get_db() -> Generator[Session, None, None]:
-    """Provide a transactional database session."""
+def get_db() -> Session:
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+@router.get("/ui", response_class=HTMLResponse)
+def ui_list_users(request: Request, db: Annotated[Session, Depends(get_db)]):
+    """
+    Minimal HTML page to browse saved users.
+    """
+    users = db.query(User).all()
+    return templates.TemplateResponse("ui.html", {"request": request, "users": users})
 
 
 @router.get("", response_model=list[UserOut])
@@ -71,16 +80,3 @@ def get_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
     if schema.credit_card and schema.credit_card.cc_number:
         schema.credit_card.cc_number = mask_credit_card(schema.credit_card.cc_number)
     return schema
-
-
-@router.get("/ui", response_class=HTMLResponse)
-def ui_list_users(db: Annotated[Session, Depends(get_db)]):
-    """
-    Minimal HTML page to browse saved users.
-    """
-    users = db.query(User).all()
-    html = ["<html><body><h1>Users</h1><ul>"]
-    for u in users:
-        html.append(f"<li>{u.id}: {u.name} ({u.email})</li>")
-    html.append("</ul></body></html>")
-    return "\n".join(html)
