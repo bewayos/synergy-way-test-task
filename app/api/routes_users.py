@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -15,7 +16,8 @@ from app.utils.masking import mask_credit_card
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-def get_db() -> Session:
+def get_db() -> Generator[Session, None, None]:
+    """Provide a transactional database session."""
     db = SessionLocal()
     try:
         yield db
