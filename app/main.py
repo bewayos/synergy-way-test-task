@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -13,18 +14,26 @@ from .models import Base
 setup_logging()
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="SynergyWay Celery Test", version="0.1.0")
 
-
-@app.on_event("startup")
-def on_startup() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """
-    Initialize database tables on app startup.
-
-    In production systems migrations (Alembic) should be used instead.
+    Lifespan context for startup/shutdown events.
+    Here we create DB tables on startup.
     """
+    # startup
     Base.metadata.create_all(bind=engine)
     logger.info("db_tables_created")
+    yield
+    # shutdown (if you ever need to close sessions, cleanup, etc.)
+    logger.info("app_shutdown")
+
+
+app = FastAPI(
+    title="SynergyWay Celery Test",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 
 @app.get("/healthz")
@@ -34,4 +43,5 @@ def healthz() -> dict[str, str]:
     return {"status": "ok"}
 
 
+# Routers
 app.include_router(routes_users.router)
