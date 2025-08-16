@@ -31,6 +31,7 @@ services:
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     env_file: .env
     environment:
+      PYTHONPATH: /app
       DATABASE_URL: ${DATABASE_URL}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
@@ -51,6 +52,8 @@ services:
     build: .
     command: ["celery", "-A", "app.celery_app.celery", "worker", "-l", "info"]
     env_file: .env
+    environment:
+      PYTHONPATH: /app
     depends_on:
       db:
         condition: service_healthy
@@ -61,6 +64,8 @@ services:
     build: .
     command: ["celery", "-A", "app.celery_app.celery", "beat", "-l", "info"]
     env_file: .env
+    environment:
+      PYTHONPATH: /app
     depends_on:
       db:
         condition: service_healthy
@@ -71,6 +76,8 @@ services:
     build: .
     command: ["celery", "--broker=${CELERY_BROKER_URL}", "flower", "--port=5555", "--address=0.0.0.0"]
     env_file: .env
+    environment:
+      PYTHONPATH: /app
     ports:
       - "5555:5555"
     depends_on:
