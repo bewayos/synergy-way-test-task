@@ -31,7 +31,7 @@ def ui_list_users(request: Request, db: Annotated[Session, Depends(get_db)]):
     Minimal HTML page to browse saved users.
     """
     users = db.query(User).all()
-    return templates.TemplateResponse("ui.html", {"request": request, "users": users})
+    return templates.TemplateResponse(request, "ui.html", {"users": users})
 
 
 @router.get("", response_model=list[UserOut])
