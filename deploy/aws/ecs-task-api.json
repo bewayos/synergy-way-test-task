@@ -1,0 +1,42 @@
+{
+    "family": "synergyway-api",
+    "networkMode": "awsvpc",
+    "cpu": "256",
+    "memory": "512",
+    "requiresCompatibilities": ["FARGATE"],
+    "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+      {
+        "name": "api",
+        "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/synergyway-test:latest",
+        "portMappings": [{ "containerPort": 8000, "protocol": "tcp" }],
+        "essential": true,
+        "command": ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/synergyway",
+            "awslogs-region": "REGION",
+            "awslogs-stream-prefix": "api"
+          }
+        },
+        "secrets": [
+          { "name": "DATABASE_URL",            "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/DATABASE_URL" },
+          { "name": "CELERY_BROKER_URL",       "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/CELERY_BROKER_URL" },
+          { "name": "CELERY_RESULT_BACKEND",   "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/CELERY_RESULT_BACKEND" },
+  
+          { "name": "USERS_EVERY",             "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/USERS_EVERY" },
+          { "name": "ENRICH_ADDR_EVERY",       "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/ENRICH_ADDR_EVERY" },
+          { "name": "ENRICH_CARD_EVERY",       "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/ENRICH_CARD_EVERY" },
+          { "name": "BATCH_SIZE",              "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/BATCH_SIZE" },
+  
+          { "name": "JSONPLACEHOLDER_BASE_URL","valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/JSONPLACEHOLDER_BASE_URL" },
+          { "name": "DUMMYJSON_BASE_URL",      "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/DUMMYJSON_BASE_URL" },
+  
+          { "name": "REQUEST_TIMEOUT_SECONDS", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/synergy/REQUEST_TIMEOUT_SECONDS" }
+        ]
+      }
+    ]
+  }
+  
