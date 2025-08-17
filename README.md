@@ -25,7 +25,9 @@ FastAPI + Celery + RabbitMQ + PostgreSQL demo that periodically syncs users from
   - [Code quality](#code-quality)
   - [Idempotency details](#idempotency-details)
   - [Troubleshooting](#troubleshooting)
-  - [AWS notes (TBD)](#aws-notes-tbd)
+  - [AWS notes](#aws-notes)
+    - [What has been implemented](#what-has-been-implemented)
+    - [Deployment instructions](#deployment-instructions)
 
 ---
 
@@ -354,7 +356,50 @@ Tools configured in `pyproject.toml` and `.pre-commit-config.yaml`:
 
 ---
 
-## AWS notes (TBD)
+## AWS notes
+
+### What has been implemented
+
+* **EC2 instance**: created and configured with Docker, Docker Compose, Git, and AWS CLI. SSH access enabled.
+* **RDS PostgreSQL**: created and connected, with tables for users, addresses, and credit cards verified.
+* **ECS cluster**: defined with `ecsTaskExecutionRole` IAM role, cluster creation tested. Task definitions and services prepared for container deployment.
+* **IAM and secrets**: basic IAM roles and policies for ECS and RDS created. Secrets Manager considered for credentials.
+
+### Deployment instructions
+
+1. **Build and push image to ECR**
+
+   ```bash
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account_id>.dkr.ecr.us-east-1.amazonaws.com
+
+   aws ecr create-repository --repository-name synergyway-api
+
+   docker build -t synergyway-api .
+   docker tag synergyway-api:latest <account_id>.dkr.ecr.us-east-1.amazonaws.com/synergyway-api:latest
+   docker push <account_id>.dkr.ecr.us-east-1.amazonaws.com/synergyway-api:latest
+   ```
+
+2. **Provision infrastructure**
+
+   * Launch an EC2 instance for testing or use ECS Fargate for managed deployment.
+   * Ensure security groups allow access to API port (default 8000) and RDS.
+
+3. **Configure environment**
+
+   * Set environment variables in ECS Task Definition or EC2 `.env` file.
+   * Ensure `DATABASE_URL` points to the RDS instance.
+
+4. **Run containers**
+
+   * For ECS: create service based on the task definition, using the pushed ECR image.
+   * For EC2: use `docker compose up -d` inside the project directory.
+
+5. **Verify deployment**
+
+   * Check API at `http://<ec2-public-ip>:8000/healthz`.
+   * Validate ECS service health and logs via AWS Console or CloudWatch.
+
+This setup covers the minimal steps for deploying the stack on AWS. Additional improvements (CI/CD pipeline, Secrets Manager integration, autoscaling) can be layered on top later.
 
 ---
 
