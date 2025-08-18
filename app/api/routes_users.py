@@ -5,8 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.db import SessionLocal
 from app.models import Address, CreditCard, User
@@ -42,22 +41,25 @@ def list_users(
     has_address: bool | None = Query(None),
     has_card: bool | None = Query(None),
 ):
-    """
-    List users with optional filters and pagination.
-    """
-    stmt = select(User).offset(offset).limit(limit)
+    query = db.query(User)
 
     if has_address is True:
-        stmt = stmt.join(Address).filter(Address.id.isnot(None))
-    elif has_address is False:
-        stmt = stmt.outerjoin(Address).filter(Address.id.is_(None))
+        query = query.join(Address, Address.user_id == User.id)
+    elif has_card is False:
+        query = query.outerjoin(CreditCard, CreditCard.user_id == User.id).filter(
+            CreditCard.id.is_(None)
+        )
 
     if has_card is True:
-        stmt = stmt.join(CreditCard).filter(CreditCard.id.isnot(None))
+        query = query.join(CreditCard, CreditCard.user_id == User.id)
     elif has_card is False:
-        stmt = stmt.outerjoin(CreditCard).filter(CreditCard.id.is_(None))
+        query = query.outerjoin(CreditCard, CreditCard.user_id == User.id).filter(
+            CreditCard.id.is_(None)
+        )
 
-    users = db.execute(stmt).scalars().all()
+    query = query.options(joinedload(User.address), joinedload(User.credit_card))
+
+    users = query.offset(offset).limit(limit).all()
 
     results: list[UserOut] = []
     for u in users:
